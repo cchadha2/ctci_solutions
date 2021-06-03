@@ -147,6 +147,37 @@ print(palindrome_perm("abcd"))
 print(palindrome_perm("aaaa"))
 
 
+def palindrome_perm(text):
+    odds = 0
+    length = 0
+    text = text.lower()
+    for char in text:
+        if not char in string.ascii_lowercase:
+            continue
+
+        idx = ord(char) - ord("a")
+        # This block is method from book.
+        mask = 1 << idx
+        if not (odds & mask):
+            odds |= mask
+        else:
+            odds &= ~mask
+        print(bin(mask), idx, bin(odds))
+        # Commented out part here was my original method.
+        #if not bin(odds >> idx).endswith('1'):
+        #    odds += 2**idx
+        #else:
+        #    odds -= 2**idx
+    print(bin(odds), bin(odds - 1), bin(odds & (odds - 1)))
+    return not (odds and bool(odds & (odds - 1)))
+
+
+print(palindrome_perm("Tact Coa"))
+print(palindrome_perm("abcaaab"))
+print(palindrome_perm("abcd"))
+print(palindrome_perm("aaaa"))
+
+
 
 
 
