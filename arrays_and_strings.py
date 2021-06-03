@@ -106,6 +106,46 @@ print(palindrome_perm("abcd"))
 print(palindrome_perm("aaaa"))
 
 
+def palindrome_perm(text):
+    """Same complexity but more optimised to avoid 2 iterations over text."""
+    # Assume only letters count for palindrome.
+    counter = [0] * 26
+    text = text.lower() # O(length of text)
+
+    odd_count = 0
+    # Only count non whitespace letter characters.
+    length = 0
+    start_char = "a"
+    for char in text: # O(length of text)
+        if not char in string.ascii_lowercase:
+            continue
+
+        idx = ord(char) - ord(start_char)
+        count = counter[idx]
+        counter[idx] += 1
+        length += 1
+        if not count:
+            odd_count += 1
+            continue
+
+        if not count % 2:
+            odd_count += 1
+        else:
+            odd_count -= 1
+
+    if length % 2 and odd_count == 1:
+        return True
+    if not length % 2 and not odd_count:
+        return True
+
+    return False
+
+
+print(palindrome_perm("Tact Coa"))
+print(palindrome_perm("abcaaab"))
+print(palindrome_perm("abcd"))
+print(palindrome_perm("aaaa"))
+
 
 
 
