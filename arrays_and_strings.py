@@ -178,24 +178,53 @@ print(palindrome_perm("abcd"))
 print(palindrome_perm("aaaa"))
 
 
+def one_away(word, other):
+    if word == other:
+        return True
+    if abs(len(word) - len(other)) > 1:
+        return False
+
+    diffs = i = j = 0
+    while i < len(word) or j < len(other):
+        print(f"diffs: {diffs}; i: {i}; word: {word}; j: {j}; other: {other}")
+        if diffs > 1:
+            return False
+
+        if i >= len(word):
+            diffs += 1
+            j += 1
+            continue
+
+        if j >= len(other):
+            diffs += 1
+            i += 1
+            continue
+
+        if word[i] == other[j]:
+            i += 1
+            j += 1
+            continue
+
+        diffs += 1
+        if (len(word) - i + 1) > (len(other) - j + 1):
+            i += 1
+        elif (len(other) - j + 1) > (len(word) - i + 1):
+            j += 1
+        else:
+            i += 1
+            j += 1
+
+    print(f"After while loop. diffs: {diffs}; i: {i}; word: {word}; j: {j}; other: {other}")
+    return True
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+print(one_away('pale', 'ple'))
+print(one_away('pales', 'pale'))
+print(one_away('pale', 'bale'))
+print(one_away('pale', 'bake'))
+print(one_away('chirag', 'angelica'))
+print(one_away('chirag', 'angel'))
+print(one_away('chirag', 'angeli'))
 
 
 
