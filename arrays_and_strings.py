@@ -227,4 +227,36 @@ print(one_away('chirag', 'angel'))
 print(one_away('chirag', 'angeli'))
 
 
+def compressed(text):
+    """Driving force is iteration over string so O(n) time and O(m) space for list."""
+    if len(text) <= 2:
+        return text
+
+    count = 0
+    compressed = []
+    # O(n)
+    for idx, char in enumerate(text):
+        print(f"idx: {idx}; char: {char}")
+        count += 1
+        # O(1) as char and count will always be of length 1 and append is an O(1) operation.
+        if idx + 1 == len(text) or char != text[idx + 1]:
+            compressed.append(char + str(count))
+            count = 0
+
+    # Check length of compressed string in advance (before costly join).
+    if len(compressed) * 2 >= len(text):
+        return text
+
+    # O(number of separated characters)
+    return "".join(compressed)
+
+print(compressed("aabcccccaaa"))
+print(compressed("a"))
+print(compressed("aa"))
+print(compressed("ab"))
+print(compressed("abc"))
+print(compressed("abb"))
+print(compressed("abbbccc"))
+print(compressed(""))
+print(compressed("AccjiSFCMMMFFImmmncdf]]]]]]]]]]]ijjjjjjjjjjjjjjjjj"))
 
