@@ -1,4 +1,5 @@
 import string
+import math
 from collections import Counter
 
 
@@ -178,6 +179,7 @@ print(palindrome_perm("abcd"))
 print(palindrome_perm("aaaa"))
 
 
+# 1.5
 def one_away(word, other):
     if word == other:
         return True
@@ -227,6 +229,7 @@ print(one_away('chirag', 'angel'))
 print(one_away('chirag', 'angeli'))
 
 
+# 1.6
 def compressed(text):
     """Driving force is iteration over string so O(n) time and O(m) space for list."""
     if len(text) <= 2:
@@ -259,4 +262,120 @@ print(compressed("abb"))
 print(compressed("abbbccc"))
 print(compressed(""))
 print(compressed("AccjiSFCMMMFFImmmncdf]]]]]]]]]]]ijjjjjjjjjjjjjjjjj"))
+
+
+# 1.7
+def rotate_matrix(arr):
+    """Assuming 90 degree rotation is anti-clockwise.
+
+       O(number of elements) time and space but this
+       works for a matrix of any size (doesn't have to be NxN).
+    """
+    if not (arr and arr[0]):
+        return arr
+
+    new_arr = [[None] * len(arr) for _ in range(len(arr[0]))]
+
+    for new_row, col in enumerate(range(len(arr[0]) - 1, -1, -1)):
+        for row in range(len(arr)):
+            new_arr[new_row][row] = arr[row][col]
+
+    return new_arr
+
+print(rotate_matrix([list(range(1, 6)), list(range(6, 11)), list(range(11, 16))]))
+print(rotate_matrix([]))
+print(rotate_matrix([[]]))
+print(rotate_matrix([[1, 2, 3], [4, 5, 6], [7, 8, 9]]))
+print(rotate_matrix([[1, 2], [3, 4], [5, 6]]))
+print(
+    rotate_matrix(
+        [
+            [1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10],
+            [11, 12, 13, 14, 15],
+            [16, 17, 18, 19, 20],
+            [21, 22, 23, 24, 25],
+        ]
+    )
+)
+
+
+def rotate_matrix(arr):
+    """Rotating in place (NxN matrix). O(ceiling(N / 2) * (N**2)) time and O(N**2) space."""
+    if not (arr and arr[0]):
+        return arr
+
+    def rotate_layer(arr):
+        # O(N)
+        top = [row[-1] for row in arr]
+        left = arr[0][::-1]
+        bottom = [row[0] for row in arr]
+        right = arr[-1][::-1]
+        arr[0] = top
+        arr[-1] = bottom
+        # O(N)
+        for idx, row in enumerate(arr):
+            row[0] = left[idx]
+            row[-1] = right[idx]
+
+        return arr
+
+    num_layers = math.ceil(len(arr) / 2)
+    # O(ceiling(N / 2) * (N**2)) time and O(N**2) space.
+    for layer in range(num_layers):
+        # Create new (N - layer) x (N - layer) matrix for next layer.
+        # O(N**2) time in worst case to iterate over rows and get slices of rows. Also O(N**2)
+        # space.
+        new_arr = [row[layer : len(arr[layer]) - layer] for row in arr[layer : len(arr[layer]) -
+                                                                       layer]]
+        # Set corresponding indices in original matrix after rotation.
+        # O(N) time to rotate a layer and iterate over rows of rotated layer matrix.
+        # Also O(N) to set slice (O(N + N) = O(2N) = O(N)).
+        for row_idx, row in enumerate(rotate_layer(new_arr), start=layer):
+            arr[row_idx][layer : len(arr[layer]) - layer] = row
+
+    return arr
+
+
+# 5 x 5 matrix.
+arr = [
+            [1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10],
+            [11, 12, 13, 14, 15],
+            [16, 17, 18, 19, 20],
+            [21, 22, 23, 24, 25],
+        ]
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+
+# 10 x 10 matrix.
+arr = [list(range(x, y)) for x, y in zip(range(0, 101, 10), range(10, 101, 10))]
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+
+
+
+
+
+
+
+
+
+
+
+
 
