@@ -1,6 +1,14 @@
-import string
 import math
+import random
+import string
 from collections import Counter
+from copy import deepcopy
+
+
+from handy_decorators import timer
+
+
+SEED = random.seed(7)
 
 
 # 1.1
@@ -368,14 +376,129 @@ arr = rotate_matrix(arr)
 print(arr)
 
 
+def rotate_matrix(arr):
+    """Without using extra space and O(N**2) time."""
+    if not (arr and arr[0]):
+        return arr
+
+    num_layers = math.ceil(len(arr) / 2)
+    # O(N**2) time.
+    for layer in range(num_layers):
+        first = layer
+        last = len(arr) - 1 - layer
+
+        for idx in range(first, last):
+            offset = idx - first
+            top = arr[first][idx]
+
+            # Right -> Top.
+            arr[first][idx] = arr[idx][last]
+
+            # Bottom -> Right.
+            arr[idx][last] = arr[last][last - offset]
+
+            # Left -> Bottom.
+            arr[last][last - offset] = arr[last - offset][first]
+
+            # Top -> Left.
+            arr[last - offset][first] = top
+
+    return arr
 
 
+# 5 x 5 matrix.
+arr = [
+            [1, 2, 3, 4, 5],
+            [6, 7, 8, 9, 10],
+            [11, 12, 13, 14, 15],
+            [16, 17, 18, 19, 20],
+            [21, 22, 23, 24, 25],
+        ]
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+
+# 10 x 10 matrix.
+arr = [list(range(x, y)) for x, y in zip(range(0, 101, 10), range(10, 101, 10))]
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
+arr = rotate_matrix(arr)
+print(arr)
 
 
+@timer
+def zero_matrix(arr):
+    """O((nm) * (m + n)) time and O(num zeroes) space solution."""
+    if not (arr and arr[0]):
+        return arr
+
+    m = len(arr)
+    n = len(arr[0])
+    zero_row = [0] * n
+    zeroed_cols = set()
+    for row_idx, row in enumerate(arr):
+        for col_idx, value in enumerate(row):
+            # Not sure if None is allowed in arr.
+            if value == 0 and col_idx not in zeroed_cols:
+                # O(m).
+                for other_row_idx in range(m):
+                    arr[other_row_idx][col_idx] = 0
+                # O(n)
+                arr[row_idx] = zero_row
+                zeroed_cols.add(col_idx)
+                # Break out of this row since everything will be set to zero.
+                break
+    return arr
 
 
+print(zero_matrix([[1, 2, 3], [4, 0, 5], [6, 7, 8]]))
+print(zero_matrix([[1, 2, 0], [4, 0, 5], [6, 7, 8]]))
+print(zero_matrix([[1, 2, 0, 3], [5, 0, 9, 2], [0, 2, 4, 1], [4, 9, 3, 2]]))
+print(zero_matrix([[3, 2, 0], [1, 2, 3]]))
+random_arr = [random.choices(list(range(50)), k=50) for _ in range(100)]
+copied_arr = deepcopy(random_arr)
+print(zero_matrix(random_arr))
+
+@timer
+def zero_matrix(arr):
+    """O(nm) time and O(num zeroes) space solution."""
+    if not (arr and arr[0]):
+        return arr
+
+    m = len(arr)
+    n = len(arr[0])
+    zero_row = [0] * n
+    zeroed_cols = set()
+    for row_idx, row in enumerate(arr):
+        for col_idx, value in enumerate(row):
+            if value == 0 and col_idx not in zeroed_cols:
+                arr[row_idx] = zero_row
+                zeroed_cols.add(col_idx)
+                break
+
+    # O(num zeroes * m).
+    for col_idx in zeroed_cols:
+        for row_idx in range(m):
+            arr[row_idx][col_idx] = 0
+
+    return arr
 
 
-
+print(zero_matrix([[1, 2, 3], [4, 0, 5], [6, 7, 8]]))
+print(zero_matrix([[1, 2, 0], [4, 0, 5], [6, 7, 8]]))
+print(zero_matrix([[1, 2, 0, 3], [5, 0, 9, 2], [0, 2, 4, 1], [4, 9, 3, 2]]))
+print(zero_matrix([[3, 2, 0], [1, 2, 3]]))
+print(zero_matrix(copied_arr))
 
 
