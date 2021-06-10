@@ -261,6 +261,7 @@ linked_list.partition(5)
 print(linked_list, len(linked_list))
 
 
+# 2.5
 def sum_lists(a, b):
     a_node, b_node = a._first, b._first
     a_sum = b_sum = order = 0
@@ -336,25 +337,25 @@ def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
     while l1 or l2:
         l1_val = l1.val if l1 else 0
         l2_val = l2.val if l2 else 0
-      
+ 
         current_sum = l1_val + l2_val + carry
         carry = current_sum // 10
         last_digit = current_sum % 10
-      
+
         new_node = ListNode(last_digit)
         l3.next = new_node
-      
+
         if l1:
             l1 = l1.next
         if l2:
             l2 = l2.next
         l3 = l3.next
-      
+
     if carry:
         new_node = ListNode(carry)
         l3.next = new_node
         l3 = l3.next
-      
+
     return dummy_head.next
 
 
@@ -365,7 +366,7 @@ def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
         l1_sum += l1.val * (10 ** order)
         l1 = l1.next
         order += 1
-        
+
     order = 0
     while l2:
         l2_sum += l2.val * (10 ** order)
@@ -378,7 +379,7 @@ def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
         current = ListNode(val=number)
         prev_node.next = current
         prev_node = current
-    
+
     return output
 
 
@@ -386,17 +387,58 @@ def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
 def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
    val1 = ""
    val2 = ""
-   
+
    while (l1):
        val1 += str(l1.val)
        l1 = l1.next
    while (l2):
        val2 += str(l2.val)
        l2 = l2.next
-     
+
    output = str(int(val1[::-1]) + int(val2[::-1]))
    root = l3 = ListNode(int(output[-1]))
    for char in output[-2::-1]:
        l3.next = ListNode(int(char))
        l3 = l3.next
    return root
+
+
+def palindrome(link):
+    a = b = link
+    while a:
+        b = b.next
+        a = a.next
+        if a:
+            a = a.next
+
+    reverse = None
+    while b:
+        new_head = b
+        b = b.next
+        new_head.next = reverse
+        reverse = new_head
+
+    a = link
+    while reverse:
+        if a.val != reverse.val:
+            return False
+
+        a, reverse = a.next, reverse.next
+
+    return True
+
+
+link = ListNode(1, next=ListNode(2, next=ListNode(3, next=ListNode(4, next=ListNode(3,
+    next=ListNode(2, next=ListNode(1)))))))
+print(palindrome(link))
+link = ListNode(1, next=ListNode(2, next=ListNode(2, next=ListNode(1))))
+print(palindrome(link))
+link = ListNode(1, next=ListNode(4, next=ListNode(6, next=ListNode(8, next=ListNode(10)))))
+print(palindrome(link))
+link = ListNode(1, next=ListNode(2, next=ListNode(3, next=ListNode(4))))
+print(palindrome(link))
+link = ListNode(1, next=ListNode(2))
+print(palindrome(link))
+
+
+
