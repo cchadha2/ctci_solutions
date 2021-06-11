@@ -328,6 +328,9 @@ class ListNode:
         self.val = val
         self.next = next
 
+    def __repr__(self):
+        return f"Node(val={self.val}, hash={self.__hash__()})"
+
 def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
     # Typical solution
     dummy_head = ListNode()
@@ -337,7 +340,7 @@ def addTwoNumbers(self, l1: ListNode, l2: ListNode) -> ListNode:
     while l1 or l2:
         l1_val = l1.val if l1 else 0
         l2_val = l2.val if l2 else 0
- 
+
         current_sum = l1_val + l2_val + carry
         carry = current_sum // 10
         last_digit = current_sum % 10
@@ -440,5 +443,109 @@ print(palindrome(link))
 link = ListNode(1, next=ListNode(2))
 print(palindrome(link))
 
+
+def intersection(l1, l2):
+    l1_node, l2_node = l1, l2
+    l1_len = l2_len = 0
+
+    # Find tails.
+    while l1_node.next:
+        l1_len += 1
+        l1_node = l1_node.next
+    while l2_node.next:
+        l2_len += 1
+        l2_node = l2_node.next
+
+    if not l1_node is l2_node:
+        return
+
+    # Find parity in length.
+    longer = l1 if l1_len >= l2_len else l2
+    shorter = l1 if l1_len < l2_len else l2
+    diff = abs(l1_len - l2_len)
+    for _ in range(diff):
+        longer = longer.next
+
+    # Traverse at once.
+    while longer is not shorter:
+        longer, shorter = longer.next, shorter.next
+    return longer
+
+
+intersecting_node = ListNode(4, next=ListNode(5))
+l1 = ListNode(1, next=ListNode(2, next=ListNode(3, next=intersecting_node)))
+l2 = ListNode(8, next=intersecting_node)
+print(f"Intersection of linked lists: {intersection(l1, l2)}")
+
+intersecting_node = ListNode(6, next=ListNode(9))
+l1 = ListNode(1, next=ListNode(2, next=ListNode(3, next=ListNode(4, next=ListNode(5,
+    next=intersecting_node)))))
+l2 = ListNode(7, next=ListNode(10, next=intersecting_node))
+print(f"Intersection of linked lists: {intersection(l1, l2)}")
+
+l1 = ListNode(1, next=ListNode(2, next=ListNode(3, next=ListNode(4, next=ListNode(5)))))
+l2 = ListNode(7, next=ListNode(10))
+print(f"Intersection of linked lists: {intersection(l1, l2)}")
+
+
+def loop(l1):
+    """Determines whether a loop exists."""
+    fast = slow = l1
+    while fast and fast.next:
+        print(fast.val, slow.val)
+        slow = slow.next
+        fast = fast.next.next
+        if fast is slow:
+            return True
+
+    return False
+
+
+cycle = ListNode(3)
+cycle.next = ListNode(4, next=ListNode(5, next=cycle))
+l1 = ListNode(1, next=ListNode(2, next=cycle))
+res = loop(l1)
+print(res)
+
+def detect_cycle(head: ListNode) -> ListNode:
+    """Have a fast pointer travel 2 nodes for every 1 that a slow pointer advances.
+
+    Once that fast pointer meets the slow pointer, it'll have travelled twice the distance of the
+    slow pointer. Then the distance between the slow pointer and the cycle start node and the head
+    and the cycle start node are equal (as shown below). So we advance the head and the slow pointer
+    by 1 simultaneously until the two meet (the starting node of the cycle).
+    """
+
+    def has_loop(head):
+        fast = slow = head
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+            if fast is slow:
+                return slow
+
+    # When fast and slow meet in the cycle, slow has travelled H + D and fast has travelled 2H + 2D.
+    # Where H is the distance from head to the starting node of the cycle and D is the distance from
+    # the starting node to the crossing point of fast and slow.
+    slow = has_loop(head)
+    if not slow:
+        return
+
+    # When fast meets slow, fast has travelled through the cycle n times => H + D = nL where L is
+    # the length of the cycle. Therefore, H (the distance we want to know) = nL - D. And since we
+    # are D distance away from the cycle start node currently, we simply need to advance the head
+    # at the same rate as the slow pointer until the two meet.
+    while head is not slow:
+        head = head.next
+        slow = slow.next
+
+    return head
+
+
+cycle = ListNode(3)
+cycle.next = ListNode(4, next=ListNode(5, next=cycle))
+l1 = ListNode(1, next=ListNode(2, next=cycle))
+res = detect_cycle(l1)
+print(res)
 
 
