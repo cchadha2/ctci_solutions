@@ -1,6 +1,7 @@
 import unittest
+from dataclasses import dataclass
 
-
+# 3.1. Three stacks from one array.
 class ThreeStacks:
 
     def __init__(self, array_len):
@@ -83,6 +84,79 @@ class TestThreeStacks(unittest.TestCase):
         with self.assertRaises(ValueError):
             ThreeStacks(2)
 
+
+# 3.2 Minimum Stack.
+@dataclass
+class _Node:
+    val: object
+    stack_min: object
+
+
+class StackMin:
+
+    def __init__(self):
+        self.stack = []
+        self.minimum = None
+
+    def push(self, val):
+        if not self.stack or val < self.minimum:
+            self.minimum = val
+
+        self.stack.append(_Node(val, self.minimum))
+
+    def pop(self):
+        return_val = self.stack.pop().val
+
+        if not self.stack:
+            self.minimum = None
+        elif return_val == self.minimum:
+            self.minimum = self.stack[-1].stack_min
+
+        return return_val
+
+    def min(self):
+        return self.minimum
+
+
+class TestStackMin(unittest.TestCase):
+
+    def test_push(self):
+        stack = StackMin()
+        stack.push(1)
+
+        self.assertEqual(stack.minimum, 1)
+        self.assertEqual(stack.stack[0].val, 1)
+
+        stack.push(-1)
+        self.assertEqual(stack.minimum, -1)
+        self.assertEqual(stack.stack[1].stack_min, -1)
+        self.assertEqual(stack.stack[0].stack_min, 1)
+
+    def test_pop(self):
+        stack = StackMin()
+        for val in (1, 4, -1):
+            stack.push(val)
+        self.assertEqual(stack.minimum, -1)
+
+        self.assertEqual(stack.pop(), -1)
+        self.assertEqual(stack.minimum, 1)
+
+        self.assertEqual(stack.pop(), 4)
+        self.assertEqual(stack.minimum, 1)
+
+        self.assertEqual(stack.pop(), 1)
+        self.assertIsNone(stack.minimum)
+
+    def test_min(self):
+        stack = StackMin()
+
+        self.assertIsNone(stack.minimum)
+
+        stack.push(1)
+        self.assertEqual(stack.minimum, 1)
+
+        stack.push(-1)
+        self.assertEqual(stack.minimum, -1)
 
 
 if __name__ == "__main__":
