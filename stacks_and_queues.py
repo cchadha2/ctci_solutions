@@ -159,5 +159,185 @@ class TestStackMin(unittest.TestCase):
         self.assertEqual(stack.minimum, -1)
 
 
+class SetOfStacks:
+
+    capacity = 5
+
+    def __init__(self):
+        self.stack_of_stacks = [[None] * self.capacity]
+        self.top = 0
+        # Will be used for pop_at(idx) method.
+        self.curr_idx = [self.top]
+
+    def push(self, val):
+        if not (self.top + 1) % self.capacity:
+            self.stack_of_stacks.append([None] * self.capacity)
+            self.curr_idx.append(0)
+            self.top += 1
+
+        row, col = self._1d_to_2d(self.top)
+        if (self.top + 1) % self.capacity == 1 and self.stack_of_stacks[row][col] is None:
+            self.stack_of_stacks[row][col] = val
+            return
+
+        self.top += 1
+        self.curr_idx[row] += 1
+        row, col = self._1d_to_2d(self.top)
+        self.stack_of_stacks[row][col] = val
+
+    def pop(self):
+        row, col = self._1d_to_2d(self.top)
+        if self.stack_of_stacks[row][col] is None:
+            if not self.top:
+                raise IndexError("Can't pop from empty stack")
+
+            # Bring top down to next non-None value in stack.
+            while self.stack_of_stacks[row][col] is None:
+                self.top -= 1
+                row, col = self._1d_to_2d(self.top)
+
+        return_val, self.stack_of_stacks[row][col] = self.stack_of_stacks[row][col], None
+        if (self.top + 1) % self.capacity == 1:
+            if len(self.stack_of_stacks) == 1:
+                self.stack_of_stacks[row][col] = None
+                return return_val
+
+            self.stack_of_stacks.pop()
+            self.curr_idx.pop()
+        else:
+            self.curr_idx[row] -= 1
+
+        self.top -= 1
+        return return_val
+
+    def pop_at(self, row):
+        if self.stack_of_stacks[row][0] is None and len(self.stack_of_stacks) == 1:
+            raise IndexError("Can't pop from empty stack.")
+
+        col = self.curr_idx[row]
+        return_val, self.stack_of_stacks[row][col] = self.stack_of_stacks[row][col], None
+
+        if self.curr_idx[row]:
+            self.curr_idx[row] -= 1
+        elif len(self.stack_of_stacks) > 1:
+            self.curr_idx.pop(row)
+            self.stack_of_stacks.pop(row)
+            self.top -= self.capacity
+        else:
+            self.top = 0
+
+        return return_val
+
+    def _1d_to_2d(self, num):
+        return num // self.capacity, num % self.capacity
+
+
+class TestSetOfStacks(unittest.TestCase):
+
+    def test_push(self):
+        stack = SetOfStacks()
+
+        stack.push(10)
+        self.assertEqual(stack.stack_of_stacks[0][0], 10)
+        self.assertEqual(stack.top, 0)
+
+        stack.push(8)
+        self.assertEqual(stack.stack_of_stacks[0][1], 8)
+        self.assertEqual(stack.top, 1)
+
+        for _ in range(3):
+            stack.push(_)
+        stack.push(-19)
+        self.assertEqual(len(stack.stack_of_stacks), 2)
+        self.assertEqual(stack.top, 5)
+
+
+    def test_pop(self):
+        stack = SetOfStacks()
+
+        with self.assertRaises(IndexError):
+            stack.pop()
+
+        stack.push(10)
+        self.assertEqual(stack.top, 0)
+        self.assertEqual(stack.pop(), 10)
+        self.assertEqual(stack.top, 0)
+
+        for _ in range(5):
+            stack.push(_)
+        stack.push(-19)
+        self.assertEqual(stack.pop(), -19)
+        self.assertEqual(len(stack.stack_of_stacks), 1)
+        self.assertEqual(stack.top, 4)
+
+    def test_pop_at(self):
+        stack = SetOfStacks()
+        for _ in range(7):
+            stack.push(_)
+
+        for _ in range(3):
+            stack.pop_at(0)
+
+        for _ in range(2):
+            stack.pop()
+
+        self.assertEqual(len(stack.stack_of_stacks), 1)
+        self.assertFalse(all(stack.stack_of_stacks[0]))
+
+        stack.pop_at(0)
+        stack.pop_at(0)
+        with self.assertRaises(IndexError):
+            stack.pop_at(0)
+
+        for _ in range(7):
+            stack.push(_)
+
+        for _ in range(5):
+            stack.pop_at(0)
+
+        self.assertEqual(len(stack.stack_of_stacks), 1)
+        self.assertEqual(stack.stack_of_stacks[0], [5, 6, None, None, None])
+
+
+class MyQueue:
+
+    def __init__(self):
+        self._enqueue = []
+        self._dequeue = []
+
+    def enqueue(self, val):
+        self._enqueue.append(val)
+
+    def dequeue(self):
+        # Worst case time O(n) but average case is O(1).
+        if not self._dequeue:
+            while self._enqueue:
+                self._dequeue.append(self._enqueue.pop())
+
+        return self._dequeue.pop()
+
+    def __bool__(self):
+        return bool(self._dequeue) and bool(self._enqueue)
+
+
+class TestMyQueue(unittest.TestCase):
+
+    def test_enqueue(self):
+        queue = MyQueue()
+        queue.enqueue(3)
+        self.assertEqual(queue._enqueue[0], 3)
+        queue.enqueue(9)
+        self.assertEqual(queue._enqueue[1], 9)
+
+    def test_dequeue(self):
+        queue = MyQueue()
+        for val in range(5):
+            queue.enqueue(val)
+        for val in range(5):
+            self.assertEqual(queue.dequeue(), val)
+
+        self.assertFalse(queue)
+
+
 if __name__ == "__main__":
     unittest.main()
