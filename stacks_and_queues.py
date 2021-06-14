@@ -309,15 +309,21 @@ class MyQueue:
         self._enqueue.append(val)
 
     def dequeue(self):
+        self._shift_vals()
+        return self._dequeue.pop()
+
+    def peek(self):
+        self._shift_vals()
+        return self._dequeue[-1]
+
+    def _shift_vals(self):
         # Worst case time O(n) but average case is O(1).
         if not self._dequeue:
             while self._enqueue:
                 self._dequeue.append(self._enqueue.pop())
 
-        return self._dequeue.pop()
-
     def __bool__(self):
-        return bool(self._dequeue) and bool(self._enqueue)
+        return bool(self._dequeue) or bool(self._enqueue)
 
 
 class TestMyQueue(unittest.TestCase):
@@ -337,6 +343,12 @@ class TestMyQueue(unittest.TestCase):
             self.assertEqual(queue.dequeue(), val)
 
         self.assertFalse(queue)
+
+    def test_peek(self):
+        queue = MyQueue()
+        queue.enqueue(1)
+        self.assertEqual(queue.peek(), 1)
+        self.assertTrue(queue)
 
 
 if __name__ == "__main__":
