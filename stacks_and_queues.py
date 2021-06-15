@@ -1,5 +1,7 @@
 import unittest
+from collections import deque
 from dataclasses import dataclass
+
 
 # 3.1. Three stacks from one array.
 class ThreeStacks:
@@ -159,6 +161,7 @@ class TestStackMin(unittest.TestCase):
         self.assertEqual(stack.minimum, -1)
 
 
+# 3.3
 class SetOfStacks:
 
     capacity = 5
@@ -299,6 +302,7 @@ class TestSetOfStacks(unittest.TestCase):
         self.assertEqual(stack.stack_of_stacks[0], [5, 6, None, None, None])
 
 
+# 3.4
 class MyQueue:
 
     def __init__(self):
@@ -349,6 +353,199 @@ class TestMyQueue(unittest.TestCase):
         queue.enqueue(1)
         self.assertEqual(queue.peek(), 1)
         self.assertTrue(queue)
+
+
+# 3.5
+def sort_stack(stack):
+    """In place stack sort."""
+    temp = []
+    # O(n) time and space.
+    while stack:
+        temp.append(stack.pop())
+
+    # O(n**2) time in the worst case.
+    while temp:
+        curr = temp.pop()
+
+        if not stack or stack[-1] >= curr:
+            stack.append(curr)
+            continue
+
+        while stack and curr > stack[-1]:
+            temp.append(stack.pop())
+        stack.append(curr)
+
+
+class TestSortStack(unittest.TestCase):
+
+    def test_small(self):
+        stack = [3, 1, 4, 2, 7]
+        expected = [7, 4, 3, 2, 1]
+
+        sort_stack(stack)
+        self.assertEqual(stack, expected)
+
+    def test_none(self):
+        stack = []
+        expected = []
+
+        sort_stack(stack)
+        self.assertEqual(stack, expected)
+
+
+    def test_duplicates(self):
+        stack = [9, 2, 1, 2, 4, 5]
+        expected = [9, 5, 4, 2, 2, 1]
+
+        sort_stack(stack)
+        self.assertEqual(stack, expected)
+
+
+    def test_reverse(self):
+        stack = list(range(11))
+        expected = list(range(10, -1, -1))
+
+        sort_stack(stack)
+        self.assertEqual(stack, expected)
+
+
+# 3.6
+@dataclass
+class Animal:
+    cat: bool
+    order: int = None
+
+
+class AnimalShelter:
+
+    def __init__(self):
+        self.order = 0
+        self.cats = deque()
+        self.dogs = deque()
+
+    def enqueue(self, animal):
+        animal.order = self.order
+
+        if animal.cat:
+            self.cats.append(animal)
+        else:
+            self.dogs.append(animal)
+
+        self.order += 1
+
+    def dequeueAny(self):
+        if not self.dogs and not self.cats:
+            raise IndexError("Empty shelter!")
+        elif not self.dogs:
+            return self.cats.popleft()
+        elif not self.cats:
+            return self.dogs.popleft()
+
+        oldest = self.cats if self.cats[0].order < self.dogs[0].order else self.dogs
+        return oldest.popleft()
+
+    def dequeueDog(self):
+        if not self.dogs:
+            raise IndexError("No dogs in shelter")
+
+        return self.dogs.popleft()
+
+    def dequeueCat(self):
+        if not self.cats:
+            raise IndexError("No cats in shelter")
+
+        return self.cats.popleft()
+
+
+class TestAnimalShelter(unittest.TestCase):
+
+    def test_enqueue(self):
+        shelter = AnimalShelter()
+
+        fido = Animal(False)
+        shelter.enqueue(fido)
+        self.assertTrue(fido in shelter.dogs)
+        self.assertEqual(fido.order, 0)
+
+        pepper = Animal(True)
+        shelter.enqueue(pepper)
+        self.assertTrue(pepper in shelter.cats)
+        self.assertEqual(pepper.order, 1)
+
+        rex = Animal(False)
+        shelter.enqueue(rex)
+        self.assertTrue(rex in shelter.dogs)
+        self.assertEqual(rex.order, 2)
+
+        cheech = Animal(False)
+        shelter.enqueue(cheech)
+        self.assertTrue(cheech in shelter.dogs)
+        self.assertEqual(cheech.order, 3)
+
+        self.assertEqual(len(shelter.cats), 1)
+        self.assertEqual(len(shelter.dogs), 3)
+
+    def test_dequeueAny(self):
+        shelter = AnimalShelter()
+
+        fido = Animal(False)
+        shelter.enqueue(fido)
+
+        pepper = Animal(True)
+        shelter.enqueue(pepper)
+
+        rex = Animal(False)
+        shelter.enqueue(rex)
+
+        cheech = Animal(False)
+        shelter.enqueue(cheech)
+
+        self.assertEqual(shelter.dequeueAny(), fido)
+        self.assertEqual(shelter.dequeueAny(), pepper)
+        self.assertEqual(shelter.dequeueAny(), rex)
+        self.assertEqual(shelter.dequeueAny(), cheech)
+
+        with self.assertRaises(IndexError):
+            shelter.dequeueAny()
+
+    def test_dequeueDog(self):
+        shelter = AnimalShelter()
+
+        fido = Animal(False)
+        shelter.enqueue(fido)
+
+        rex = Animal(False)
+        shelter.enqueue(rex)
+
+        cheech = Animal(False)
+        shelter.enqueue(cheech)
+
+        self.assertEqual(shelter.dequeueDog(), fido)
+        self.assertEqual(shelter.dequeueDog(), rex)
+        self.assertEqual(shelter.dequeueDog(), cheech)
+
+        with self.assertRaises(IndexError):
+            shelter.dequeueDog()
+
+    def test_dequeueCat(self):
+        shelter = AnimalShelter()
+
+        fido = Animal(True)
+        shelter.enqueue(fido)
+
+        rex = Animal(True)
+        shelter.enqueue(rex)
+
+        cheech = Animal(True)
+        shelter.enqueue(cheech)
+
+        self.assertEqual(shelter.dequeueCat(), fido)
+        self.assertEqual(shelter.dequeueCat(), rex)
+        self.assertEqual(shelter.dequeueCat(), cheech)
+
+        with self.assertRaises(IndexError):
+                shelter.dequeueCat()
+
 
 
 if __name__ == "__main__":
