@@ -219,6 +219,32 @@ class TestBalanced(unittest.TestCase):
         self.assertFalse(is_balanced(root))
 
 
+# 4.5
+def validate(node, lo=-inf, hi=inf):
+    if not node:
+        return True
+    elif node.val <= lo or node.val >= hi:
+        return False
+
+    return (validate(node.left, lo=lo, hi=node.val) and validate(node.right, lo=node.val, hi=hi))
+
+
+class TestValidateBST(unittest.TestCase):
+
+    def test_bst(self):
+        root = TreeNode(6, left=TreeNode(1, left=TreeNode(-1), right=TreeNode(2)), right=TreeNode(8,
+            right=TreeNode(12)))
+        self.assertTrue(validate(root))
+
+    def test_bt(self):
+        root = TreeNode(7, left=TreeNode(3, left=TreeNode(6), right=TreeNode(18)),
+                right=TreeNode(25))
+        self.assertFalse(validate(root))
+
+    def test_invalid_bst(self):
+        root = TreeNode(5, left=TreeNode(4), right=TreeNode(6, left=TreeNode(3), right=TreeNode(7)))
+        self.assertFalse(validate(root))
+
 
 if __name__ == "__main__":
     unittest.main()
