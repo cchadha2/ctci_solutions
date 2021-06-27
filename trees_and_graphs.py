@@ -1,7 +1,7 @@
 import unittest
 from collections import deque
 from dataclasses import dataclass, field
-from math import inf
+from math import exp, inf
 from typing import Type
 
 
@@ -51,6 +51,8 @@ class TreeNode:
     val: object
     left: Type["TreeNode"] = None
     right: Type["TreeNode"] = None
+    # Used for 4.6
+    parent: Type["TreeNode"] = None
 
 
 def minimal_tree(arr):
@@ -244,6 +246,61 @@ class TestValidateBST(unittest.TestCase):
     def test_invalid_bst(self):
         root = TreeNode(5, left=TreeNode(4), right=TreeNode(6, left=TreeNode(3), right=TreeNode(7)))
         self.assertFalse(validate(root))
+
+
+# 4.6
+def successor(node):
+    if node.right:
+        return _successor(node.right)
+
+    while node.parent and node is node.parent.right:
+        node = node.parent
+
+    return node.parent
+
+
+def _successor(node):
+    if not node:
+        return
+
+    left = _successor(node.left)
+    return left if left else node
+
+
+class TestSuccessor(unittest.TestCase):
+
+    def test_with_right_subtree(self):
+        exp_successor = TreeNode(6)
+        root = TreeNode(4, left=TreeNode(2, left=TreeNode(1)), 
+                           right=TreeNode(8, right=TreeNode(9), left=exp_successor))
+        self.assertEqual(exp_successor, successor(root))
+
+    def test_without_successor(self):
+        exp_successor = None
+        root = TreeNode(4, left=TreeNode(2, left=TreeNode(1)))
+        self.assertEqual(exp_successor, successor(root))
+
+
+    def test_without_right_subtree(self):
+        root = TreeNode(15, left=TreeNode(9, left=TreeNode(6, left=TreeNode(2)),
+                            right=TreeNode(12, left=TreeNode(10))), right=TreeNode(18))
+        root.left.parent = root
+        root.right.parent = root
+        root.left.left.parent = root.left
+        root.left.right.parent = root.left
+        root.left.left.left.parent = root.left.left
+        root.left.right.left.parent = root.left.right
+
+        left_predecessor = root.left.left
+        self.assertEqual(left_predecessor.parent, successor(left_predecessor))
+
+        right_predecessor = root.left.right
+        self.assertEqual(root, successor(right_predecessor))
+
+        maximum = root.right
+        self.assertEqual(None, successor(maximum))
+
+
 
 
 if __name__ == "__main__":
