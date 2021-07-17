@@ -301,6 +301,174 @@ class TestSuccessor(unittest.TestCase):
         self.assertEqual(None, successor(maximum))
 
 
+# 4.7
+# Assuming projects are alphabetical letters, in sequence, represented as strings.
+class DiGraph:
+    def __init__(self, vertices, edges):
+        self.initial = ord("a")
+        # Adjacency lists representation of graph, assuming more vertices may be later added.
+        self.graph = [[] for _ in vertices]
+        for from_vertex, to_vertex in edges:
+            self.graph[ord(from_vertex) - self.initial].append(to_vertex)
+
+    def cycle_finder(self):
+        """O(E + V) as every vertex and every edge are visited at most once."""
+        path = set()
+        visited = set()
+
+        if any(self._visit(chr(vertex_idx + self.initial), visited, path) 
+               for vertex_idx, _ in enumerate(self.graph)):
+            raise ValueError("Graph is not a directed acyclic graph")
+
+        
+    def topological_sort(self):
+        """O(E + V) as every vertex and every edge are visited at most once."""
+        self.cycle_finder()
+        
+        post_order = []
+        visited = set()
+        for vertex_idx, _ in enumerate(self.graph):
+            vertex = chr(vertex_idx + self.initial)
+            self._topological_sort(vertex, visited, post_order)
+
+        return reversed(post_order)
+
+    def _visit(self, vertex, visited, path):
+        if vertex in visited:
+            return False
+        
+        visited.add(vertex)
+        path.add(vertex)
+        for neighbour in self.graph[ord(vertex) - self.initial]:
+            if neighbour in path or self._visit(neighbour, visited, path):
+                return True
+        path.remove(vertex)
+
+        return False
+
+    def _topological_sort(self, vertex, visited, post_order):
+        if vertex in visited:
+            return
+
+        visited.add(vertex)
+        for neighbour in self.graph[ord(vertex) - self.initial]:
+            self._topological_sort(neighbour, visited, post_order)
+
+        post_order.append(vertex)
+
+
+class TestTopologicalSort(unittest.TestCase):
+
+    def test_with_cycle(self):
+        graph = DiGraph(vertices=("a", "b", "c", "d", "e", "f", "g"),
+                        edges=(("a", "e"), ("c", "f"), ("c", "e"), ("c", "d"),
+                               ("d", "f"), ("e", "d"), ("e", "b"), ("f", "a"),
+                               ("b", "g"), ("b", "a")))
+
+        with self.assertRaises(ValueError):
+            graph.topological_sort()
+
+    def test_without_cycle(self):
+        graph = DiGraph(vertices=("a", "b", "c", "d", "e", "f"),
+                        edges=(("a", "d"), ("f", "b"), ("b", "d"), ("f", "a"), ("d", "c")))
+
+        expected = ("f", "e", "b", "a", "d", "c")
+        self.assertEqual(expected, tuple(graph.topological_sort()))
+
+
+# 4.8
+def first_ancestor(root, a, b):
+    if not root:
+        return
+
+    left_a = dfs(root.left, a)
+    right_a = False
+    if not left_a:
+        right_a = dfs(root.right, a)
+
+    left_b = dfs(root.left, b)
+    right_b = False
+    if not left_b:
+        right_b = dfs(root.right, b)
+
+    if left_a and left_b:
+        return first_ancestor(root.left, a, b)
+    elif not left_a and not left_b:
+        return first_ancestor(root.right, a, b)
+    
+    if not (left_a or right_a) or not (left_b or right_b):
+        return None
+
+    return root
+
+def dfs(root, node):
+    if not root:
+        return False
+
+    if root.val == node.val:
+        return True
+
+    left = dfs(root.left, node)
+    return left or dfs(root.right, node)
+
+def dfs(node, a, b):
+    if not node:
+        return
+
+    if node.val == a.val or node.val == b.val:
+        return node
+
+    left = dfs(node.left, a, b)
+    right = dfs(node.right, a, b)
+    if left and right:
+        return node
+
+    return left or right
+
+#    return node if (left and right) else None
+
+
+class TestFirstAncestor(unittest.TestCase):
+
+    def test_small(self):
+        root = TreeNode(8, left=TreeNode(17), right=TreeNode(24))
+
+        a = TreeNode(17)
+        b = TreeNode(24)
+        self.assertEqual(root, dfs(root, a, b))
+
+    def test_bigger(self):
+        root = TreeNode(5, left=TreeNode(8, left=TreeNode(17),
+                                            right=TreeNode(24,
+                                                right=TreeNode(94,
+                                                left=TreeNode(108)))),
+                           right=TreeNode(12, right=TreeNode(36,
+                                                left=TreeNode(47),
+                                                right=TreeNode(82))))
+
+        a = TreeNode(94)
+        b = TreeNode(17)
+        self.assertEqual(root.left, dfs(root, a, b))
+
+        a = TreeNode(47)
+        b = TreeNode(17)
+        self.assertEqual(root, dfs(root, a, b))
+
+        a = TreeNode(47)
+        b = TreeNode(82)
+        self.assertEqual(root.right.right, dfs(root, a, b))
+        
+        a = TreeNode(47)
+        b = TreeNode(36)
+        self.assertEqual(root.right, dfs(root, a, b))
+
+        a = TreeNode(900)
+        b = TreeNode(17)
+        # 900 is not in the tree.
+        self.assertEqual(None, dfs(root, a, b))
+
+
+
 
 
 if __name__ == "__main__":
