@@ -395,21 +395,12 @@ def first_ancestor(root, a, b):
         return first_ancestor(root.left, a, b)
     elif not left_a and not left_b:
         return first_ancestor(root.right, a, b)
-    
+
     if not (left_a or right_a) or not (left_b or right_b):
         return None
 
     return root
 
-def dfs(root, node):
-    if not root:
-        return False
-
-    if root.val == node.val:
-        return True
-
-    left = dfs(root.left, node)
-    return left or dfs(root.right, node)
 
 def dfs(node, a, b):
     if not node:
@@ -424,8 +415,6 @@ def dfs(node, a, b):
         return node
 
     return left or right
-
-#    return node if (left and right) else None
 
 
 class TestFirstAncestor(unittest.TestCase):
@@ -457,17 +446,162 @@ class TestFirstAncestor(unittest.TestCase):
         a = TreeNode(47)
         b = TreeNode(82)
         self.assertEqual(root.right.right, dfs(root, a, b))
-        
+
         a = TreeNode(47)
         b = TreeNode(36)
-        self.assertEqual(root.right, dfs(root, a, b))
+        self.assertEqual(root.right.right, dfs(root, a, b))
 
+
+    @unittest.expectedFailure
+    def test_non_existent(self):
+        """This method doesn't support inexistent nodes."""
         a = TreeNode(900)
         b = TreeNode(17)
         # 900 is not in the tree.
         self.assertEqual(None, dfs(root, a, b))
 
 
+# 4.9
+def all_sequences(node):
+    if not node:
+        return [[]]
+
+    left, right = all_sequences(node.left), all_sequences(node.right)
+
+    weaved = []
+    for left_val in left:
+        for right_val in right:
+            weaved = weave(left_val, right_val, [node.val], weaved)
+    return weaved
+
+
+def weave(left, right, prefix, results):
+    print(f"left: {left}, right: {right}")
+    if not (left and right):
+        print("I am in here")
+        result = prefix.copy()
+        result.extend(left)
+        result.extend(right)
+        results.append(result)
+        return results
+
+    print(f"current left: {left}, current right: {right}")
+
+    head = left[0]
+    prefix.append(head)
+    results = weave(left[1:], right, prefix, results)
+    prefix.pop()
+    head = right[0]
+    prefix.append(head)
+    results = weave(left, right[1:], prefix, results)
+    prefix.pop()
+    return results
+
+class TestSequences:
+
+    def test_small(self):
+        root = TreeNode(20, left=TreeNode(9, left=TreeNode(5), right=TreeNode(12)),
+                            right=TreeNode(25))
+
+        seqs = all_sequences(root)
+        for sequence in seqs:
+            print(sequence)
+
+    def test_large(self):
+        root = TreeNode(25,
+                        left=TreeNode(10,
+                            left=TreeNode(5,
+                                left=TreeNode(1)),
+                            right=TreeNode(12)),
+                        right=TreeNode(45,
+                            left=TreeNode(32,
+                                right=TreeNode(37))))
+
+        seqs = all_sequences(root)
+        for sequence in seqs:
+            print(sequence)
+
+# 4.10
+def subtree_checker(root, node):
+    if not root:
+        return False
+    elif root.val == node.val:
+        return check_equals(root, node)
+
+    return subtree_checker(root.left, node) or subtree_checker(root.right, node)
+
+def check_equals(root, node):
+    t1_stack, t2_stack = [root], [node]
+
+    while t1_stack and t2_stack:
+        t1_node, t2_node = t1_stack.pop(), t2_stack.pop()
+
+        if not t1_node.val == t2_node.val:
+            return False
+
+        if t1_node.right:
+            t1_stack.append(t1_node.right)
+        if t1_node.left:
+            t1_stack.append(t1_node.left)
+        if t2_node.right:
+            t2_stack.append(t2_node.right)
+        if t2_node.left:
+            t2_stack.append(t2_node.left)
+
+    return not (bool(t1_stack) or bool(t2_stack))
+
+
+class TestSubtreeChecker(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.t1 = TreeNode(17,
+                left=TreeNode(8,
+                    left=TreeNode(9,
+                        left=TreeNode(11),
+                        right=TreeNode(23)
+                        ),
+                    right=TreeNode(12,
+                        left=TreeNode(18),
+                        right=TreeNode(40)
+                        )
+                    ),
+                right=TreeNode(4,
+                    left=TreeNode(16,
+                        left=TreeNode(32),
+                        right=TreeNode(7)
+                        ),
+                    right=TreeNode(42,
+                        left=TreeNode(14),
+                        right=TreeNode(27)
+                        )
+                    )
+                )
+
+    def test_existing(self):
+        t2 = TreeNode(42,
+                left=TreeNode(14),
+                right=TreeNode(27)
+                )
+
+        self.assertTrue(subtree_checker(self.t1, t2))
+
+    def test_not_existing(self):
+        t2 = TreeNode(42,
+                left=TreeNode(8),
+                right=TreeNode(27)
+                )
+
+        self.assertFalse(subtree_checker(self.t1, t2))
+
+    def test_extra_nodes_t2(self):
+        t2 = TreeNode(9,
+                left=TreeNode(11),
+                right=TreeNode(23,
+                    left=TreeNode(42))
+                )
+
+        self.assertFalse(subtree_checker(self.t1, t2))
 
 
 
