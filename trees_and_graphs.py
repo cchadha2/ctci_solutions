@@ -1,3 +1,4 @@
+import random
 import unittest
 from collections import deque
 from dataclasses import dataclass, field
@@ -316,15 +317,15 @@ class DiGraph:
         path = set()
         visited = set()
 
-        if any(self._visit(chr(vertex_idx + self.initial), visited, path) 
+        if any(self._visit(chr(vertex_idx + self.initial), visited, path)
                for vertex_idx, _ in enumerate(self.graph)):
             raise ValueError("Graph is not a directed acyclic graph")
 
-        
+
     def topological_sort(self):
         """O(E + V) as every vertex and every edge are visited at most once."""
         self.cycle_finder()
-        
+
         post_order = []
         visited = set()
         for vertex_idx, _ in enumerate(self.graph):
@@ -336,7 +337,7 @@ class DiGraph:
     def _visit(self, vertex, visited, path):
         if vertex in visited:
             return False
-        
+
         visited.add(vertex)
         path.add(vertex)
         for neighbour in self.graph[ord(vertex) - self.initial]:
@@ -602,6 +603,27 @@ class TestSubtreeChecker(unittest.TestCase):
                 )
 
         self.assertFalse(subtree_checker(self.t1, t2))
+
+
+# 4.11
+class BinaryTree:
+    """Insert and delete methods would require O(n) time as keys list needs to be updated.
+       Find method would also be O(n) as the tree is not necessarily a binary search tree.
+
+       This is a method that would work well for binary trees but a more efficient method
+       as detailed in the book works for binary search trees where we can get to the smallest
+       key very quickly. In essence, we could number the nodes based on their order in the tree
+       and do a random choice for the number with a 1/N probability for each number. Following
+       that, a simple traversal is required to find the node itself.
+    """
+
+    def __init__(self):
+        self.keys = []
+
+    def getRandomNode(self):
+        return random.choice(self.keys)
+
+# 4.12
 
 
 
