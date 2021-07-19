@@ -3,6 +3,7 @@ import unittest
 
 from handy_decorators import timer
 
+
 @timer
 def basic_fib(i: int):
     """Lots of repetitive calls, no memoization."""
@@ -25,6 +26,7 @@ def _top_down_fib(i: int, cache: list):
         cache.append(_top_down_fib(i - 1, cache) + _top_down_fib(i - 2, cache))
 
     return cache[i]
+
 
 @timer
 def bottom_up_fib(i: int):

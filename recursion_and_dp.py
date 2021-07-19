@@ -28,6 +28,7 @@ class TestTripleSteps(unittest.TestCase):
         with self.assertRaises(ValueError):
             triple_steps(-1)
 
+
 # 8.2
 class RobotGrid:
     """O(rows x cols) time and O(rows + cols) space complexity."""
