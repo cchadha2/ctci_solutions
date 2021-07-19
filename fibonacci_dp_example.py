@@ -47,7 +47,6 @@ class TestFibonacci(unittest.TestCase):
     def test_basic(self):
         self.assertEqual(basic_fib(4), 3)
 
-
     def test_top_down(self):
         self.assertEqual(top_down_fib(4), 3)
 
