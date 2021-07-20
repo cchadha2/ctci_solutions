@@ -134,6 +134,34 @@ class TestMagicIdx(unittest.TestCase):
         self.assertEqual(dupe_idx(arr, 0, len(arr)), 7)
 
 
+# 8.4
+def power_set(super_set: list):
+    return _power_set(super_set, index=0, all_subsets=[])
+
+def _power_set(super_set: list, index: int, all_subsets: list):
+    """O(n2**n) time and space complexity in worst case."""
+    if len(super_set) == index:
+        all_subsets.append([])
+    else:
+        _power_set(super_set, index + 1, all_subsets)
+        item = super_set[index]
+        temp_sets = []
+        for other_set in all_subsets:
+            print(other_set)
+            new_set = other_set.copy()
+            new_set.append(item)
+            temp_sets.append(new_set)
+        all_subsets.extend(temp_sets)
+
+    return all_subsets
+
+
+class TestPowerSet(unittest.TestCase):
+
+    def test_small(self):
+        super_set = [1, 2, 3]
+        self.assertEqual(power_set(super_set),
+                [[], [3], [2], [3, 2], [1], [3, 1], [2, 1], [3, 2, 1]])
 
 if __name__ == "__main__":
     unittest.main()

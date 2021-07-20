@@ -624,6 +624,46 @@ class BinaryTree:
         return random.choice(self.keys)
 
 # 4.12
+def sum_paths(root, value):
+    stack = [root]
+    paths = 0
+    while stack:
+        node = stack.pop()
+        paths += _dfs(node, value)
+
+        if node.left:
+            stack.append(node.left)
+        if node.right:
+            stack.append(node.right)
+
+    return paths
+
+def _dfs(node, value, current_sum=0):
+    if not node:
+        return 0
+
+    current_sum += node.val
+    total_paths = 1 if current_sum == value else 0
+    total_paths += _dfs(node.left, value, current_sum)
+    total_paths += _dfs(node.right, value, current_sum)
+
+    return total_paths
+
+class TestPathFinder(unittest.TestCase):
+
+    def test_small(self):
+        root = TreeNode(4,
+                left=TreeNode(-1,
+                    left=TreeNode(2)
+                    ),
+                right=TreeNode(-4,
+                    left=TreeNode(5)
+                    )
+                )
+
+        self.assertEqual(sum_paths(root, 5), 3)
+        self.assertEqual(sum_paths(root, 0), 1)
+        self.assertEqual(sum_paths(root, 19), 0)
 
 
 
