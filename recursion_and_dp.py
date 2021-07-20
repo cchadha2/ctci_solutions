@@ -1,3 +1,4 @@
+import itertools
 import math
 import unittest
 
@@ -138,6 +139,7 @@ class TestMagicIdx(unittest.TestCase):
 def power_set(super_set: list):
     return _power_set(super_set, index=0, all_subsets=[])
 
+
 def _power_set(super_set: list, index: int, all_subsets: list):
     """O(n2**n) time and space complexity in worst case."""
     if len(super_set) == index:
@@ -147,7 +149,6 @@ def _power_set(super_set: list, index: int, all_subsets: list):
         item = super_set[index]
         temp_sets = []
         for other_set in all_subsets:
-            print(other_set)
             new_set = other_set.copy()
             new_set.append(item)
             temp_sets.append(new_set)
@@ -156,12 +157,27 @@ def _power_set(super_set: list, index: int, all_subsets: list):
     return all_subsets
 
 
+def pythonic_power_set(super_set):
+    """Same time and space complexity but a bit more pythonic."""
+    return [list(elem) for r in range(len(super_set) + 1)
+            for elem in itertools.combinations(super_set, r)]
+
+
+def more_pythonic_power_set(super_set):
+    """Lazy evaluation and yields tuples instead of lists or sets."""
+    return itertools.chain_from_iterable(itertools.combinations(super_set, r)
+            for r in range(len(super_set) + 1))
+
+
 class TestPowerSet(unittest.TestCase):
 
     def test_small(self):
         super_set = [1, 2, 3]
         self.assertEqual(power_set(super_set),
                 [[], [3], [2], [3, 2], [1], [3, 1], [2, 1], [3, 2, 1]])
+        self.assertEqual(pythonic_power_set(super_set),
+                [[], [1], [2], [3], [1, 2], [1, 3], [2, 3], [1, 2, 3]])
+
 
 if __name__ == "__main__":
     unittest.main()
