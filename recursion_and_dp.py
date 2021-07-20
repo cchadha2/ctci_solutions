@@ -86,6 +86,54 @@ class TestRobotGrid(unittest.TestCase):
         self.assertFalse(RobotGrid(grid).robot_path())
 
 
+# 8.3
+def magic_idx(arr, start, end):
+    mid = (start + end) // 2
+    if arr[mid] == mid:
+        return mid
+    if start == end:
+        return
+
+    if arr[mid] > mid:
+        return magic_idx(arr, start, mid)
+    else:
+        return magic_idx(arr, mid + 1, end)
+
+
+def dupe_idx(arr, start, end):
+    mid = (start + end) // 2
+    if arr[mid] == mid:
+        return mid
+    if start >= end:
+        return
+
+    left, right = min(mid, arr[mid]), max(mid + 1, arr[mid])
+    return dupe_idx(arr, start, left) or dupe_idx(arr, right, end)
+
+
+class TestMagicIdx(unittest.TestCase):
+
+    def test_distinct_left(self):
+        arr = [-1, 0, 2, 4, 5, 7, 8, 9, 12]
+        self.assertEqual(magic_idx(arr, 0, len(arr)), 2)
+        self.assertEqual(dupe_idx(arr, 0, len(arr)), 2)
+
+    def test_distinct_right(self):
+        arr = [-12, -4, -1, 0, 1, 5, 8, 12]
+        self.assertEqual(magic_idx(arr, 0, len(arr)), 5)
+        self.assertEqual(dupe_idx(arr, 0, len(arr)), 5)
+
+    def test_duplicates_left(self):
+        arr = [1, 1, 1, 2, 2, 6, 7, 8]
+        self.assertIsNone(magic_idx(arr, 0, len(arr)))
+        self.assertEqual(dupe_idx(arr, 0, len(arr)), 1)
+
+    def test_duplicates_right(self):
+        arr = [-12, 3, 4, 4, 5, 6, 7, 7]
+        self.assertIsNone(magic_idx(arr, 0, len(arr)))
+        self.assertEqual(dupe_idx(arr, 0, len(arr)), 7)
+
+
 
 if __name__ == "__main__":
     unittest.main()
