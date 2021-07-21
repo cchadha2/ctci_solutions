@@ -179,5 +179,34 @@ class TestPowerSet(unittest.TestCase):
                 [[], [1], [2], [3], [1, 2], [1, 3], [2, 3], [1, 2, 3]])
 
 
+# 8.5
+def multiply(a, b):
+    bigger, smaller = (a, b) if a >= b else (b, a)
+    print(f"Start with {bigger}, {smaller}")
+    return _multiply(smaller, bigger)
+
+def _multiply(smaller, bigger):
+    print(f"Now at {bigger}, {smaller}")
+    if not smaller:
+        return 0
+    elif smaller == 1:
+        return bigger
+
+    smaller_b = smaller >> 1
+    half_prod = _multiply(smaller_b, bigger)
+    print(f"Current half: {half_prod}")
+
+    result = half_prod + half_prod
+    print(f"Result if smaller is even: {result}, else: {result + bigger}")
+    return result + bigger if smaller % 2 else result
+
+class TestRecursiveMultiply(unittest.TestCase):
+
+    def test_evens(self):
+        self.assertEqual(multiply(8, 9), 72)
+        self.assertEqual(multiply(4, 9), 36)
+        self.assertEqual(multiply(5, 5), 25)
+
+
 if __name__ == "__main__":
     unittest.main()
