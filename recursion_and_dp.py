@@ -208,5 +208,185 @@ class TestRecursiveMultiply(unittest.TestCase):
         self.assertEqual(multiply(5, 5), 25)
 
 
+def towers(a, b, c, n):
+    if n == 1:
+        c.append(a.pop())
+        return
+
+    # Move n - 1 disks to b (temporarily).
+    towers(a, c, b, n - 1)
+    # Base case - move nth disk from a to c (end).
+    towers(a, b, c, 1)
+    # Move n - 1 disks from b to c (using a as temp).
+    towers(b, a, c, n - 1)
+
+
+class TestTowersOfHanoi(unittest.TestCase):
+
+    def test_three(self):
+        a = [3, 2, 1]
+        b = []
+        c = []
+
+        towers(a, b, c, n=3)
+        print("Finished calls", end="\n")
+        self.assertEqual(c, [3, 2, 1])
+
+    def test_two(self):
+        a = [2, 1]
+        b = []
+        c = []
+
+        towers(a, b, c, n=2)
+        print("Finished calls", end="\n")
+        self.assertEqual(c, [2, 1])
+
+    def test_one(self):
+        a = [1]
+        b = []
+        c = []
+
+        towers(a, b, c, n=1)
+        print("Finished calls", end="\n")
+        self.assertEqual(c, [1])
+
+
+    def test_five(self):
+        a = [5, 4, 3, 2, 1]
+        b = []
+        c = []
+
+        towers(a, b, c, n=5)
+        print("Finished calls", end="\n")
+        self.assertEqual(c, [5, 4, 3, 2, 1])
+
+    def test_ten(self):
+        a = list(range(1, 11))
+        b = []
+        c = []
+
+        towers(a, b, c, n=10)
+        self.assertEqual(c, list(range(1, 11)))
+
+
+# 8.7
+def perms(s, start, end):
+    if (end - start) == 1:
+        return [s[start : end]]
+
+    # O(n) time and space
+    base_texts = perms(s, start, end - 1)
+    new_char = s[end - 1 : end]
+
+    # Worst case time = O(n**2 * n!). Worse case space = O(n!)
+    res = []
+    # O(n!) time and space for while loop.
+    while base_texts:
+        base = base_texts.pop()
+        res.append(new_char + base)
+        # O((n - 1) * n) = O(n**2)
+        res.extend(base[idx:] + new_char + base[:idx] for idx in range(len(base)))
+
+    return res
+
+
+class TestPermutations(unittest.TestCase):
+
+    def test_small(self):
+        text = "ABC"
+        res = perms(text, 0, len(text))
+        self.assertEqual(['CAB', 'ABC', 'BCA', 'CBA', 'BAC', 'ACB'], res)
+
+    def test_bigger(self):
+        text = "ABCD"
+        res = perms(text, 0, len(text))
+        self.assertEqual(4 * 3 * 2, len(res))
+
+# 8.8
+def perm_with_dupes(s, start, end):
+    """Same runtime as previous function."""
+    if (end - start) == 1:
+        return set(s[start : end])
+
+    # O(n) time and space
+    base_texts = perms(s, start, end - 1)
+    new_char = s[end - 1 : end]
+
+    # Worst case time = O(n**2 * n!). Worse case space = O(n!)
+    res = set()
+    # O(n!) time and space for while loop.
+    while base_texts:
+        base = base_texts.pop()
+        res.add(new_char + base)
+        # O((n - 1) * n) = O(n**2)
+        res.update(base[idx:] + new_char + base[:idx] for idx in range(len(base)))
+
+    return res
+
+
+class TestDupePermutations(unittest.TestCase):
+
+    def test_small(self):
+        text = "AAB"
+        res = perm_with_dupes(text, 0, len(text))
+        self.assertEqual(3, len(res))
+
+    def test_bigger(self):
+        text = "AABCC"
+        res = perm_with_dupes(text, 0, len(text))
+        self.assertEqual((5 * 4 * 3 * 2) / (2 * 2), len(res))
+
+    def test_all_dupes(self):
+        # Takes a very long time.
+        text = "AAAAAAAAA"
+        res = perm_with_dupes(text, 0, len(text))
+        self.assertEqual(1, len(res))
+
+
+# 8.9
+def add_parens(res, left_rems, right_rems, text, idx):
+    if left_rems < 0 or right_rems < left_rems:
+        return
+
+    if not left_rems and not right_rems:
+        res.append("".join(text))
+        return
+
+    # Add a left parenthesis.
+    text[idx] = "("
+    add_parens(res, left_rems - 1, right_rems, text, idx + 1)
+
+    # Add a right parenthesis.
+    text[idx] = ")"
+    add_parens(res, left_rems, right_rems - 1, text, idx + 1)
+
+
+def parens(count):
+    res = []
+    # Total number parentheses in a value is count * 2.
+    text = [None] * (count * 2)
+
+    add_parens(res, left_rems=count, right_rems=count, text=text, idx=0)
+
+    return res
+
+
+class TestParens(unittest.TestCase):
+
+    def test_one(self):
+        exp = ["()"]
+        self.assertEqual(parens(1), exp)
+
+    def test_two(self):
+        exp = ["(())", "()()"]
+        self.assertEqual(parens(2), exp)
+
+    def test_three(self):
+        exp = ["((()))", "(()())", "(())()", "()(())", "()()()"]
+        self.assertEqual(parens(3), exp)
+
+
+
+
 if __name__ == "__main__":
     unittest.main()
