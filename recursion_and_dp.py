@@ -1,6 +1,7 @@
 import itertools
 import math
 import unittest
+from dataclasses import dataclass
 
 
 # 8.1
@@ -385,6 +386,205 @@ class TestParens(unittest.TestCase):
         exp = ["((()))", "(()())", "(())()", "()(())", "()()()"]
         self.assertEqual(parens(3), exp)
 
+
+# 8.10
+class Image:
+
+    def __init__(self, image):
+        if not image:
+            raise ValueError("Empty image supplied")
+
+        self.image = image
+        self.rows = len(image)
+        self.cols = len(image[0])
+
+    def paint(self, x, y, colour):
+        if x < 0 or x > self.rows:
+            raise IndexError("This point does not exist in image")
+        if y < 0 or y > self.cols:
+            raise IndexError("This point does not exist in image")
+
+        original = self.image[y][x]
+        if colour != original:
+            self._paint(x, y, colour, original)
+
+    def _paint(self, x, y, colour, original):
+        if x < 0 or x >= self.cols:
+            return
+        elif y < 0 or y >= self.rows:
+            return
+        elif (self.image[y][x] == colour or self.image[y][x] != original):
+            return
+
+        self.image[y][x] = colour
+        self._paint(x + 1, y, colour, original)
+        self._paint(x - 1, y, colour, original)
+        self._paint(x, y + 1, colour, original)
+        self._paint(x, y - 1, colour, original)
+
+
+class TestPaint(unittest.TestCase):
+
+    def test_small(self):
+        image = Image([[1, 3, 3, 2], [4, 3, 3, 3], [5, 3, 3, 2]])
+        image.paint(1, 1, 0)
+
+        expected = [[1, 0, 0, 2], [4, 0, 0, 0], [5, 0, 0, 2]]
+        self.assertEqual(image.image, expected)
+
+
+# 8.11
+coin_types = (25, 10, 5, 1)
+
+
+def coins(n):
+    cache = {amount: [None] * len(coin_types) for amount in range(n + 1)}
+    return _coins(n, 0, cache)
+
+
+def _coins(amount, idx, cache):
+    if idx >= len(coin_types) - 1:
+        return 1
+
+    if val := cache[amount][idx]:
+        return val
+
+    coin = coin_types[idx]
+    multiplier, ways = 0, 0
+    while multiplier * coin <= amount:
+        ways += _coins(amount - (multiplier * coin), idx + 1, cache)
+        multiplier += 1
+
+    cache[amount][idx] = ways
+    return ways
+
+
+class TestDenoms(unittest.TestCase):
+
+    def test_small_coin(self):
+        self.assertEqual(coins(5), 2)
+
+    def test_larger_coin(self):
+        self.assertEqual(coins(10), 4)
+        self.assertEqual(coins(11), 4)
+
+
+# 8.12
+GRID_SIZE = 8
+
+def queens(row, columns, result):
+    if row == GRID_SIZE:
+        result.append(columns.copy())
+        return
+
+    for col in range(GRID_SIZE):
+        if not check_valid(columns, row, col):
+            continue
+
+        columns[row] = col
+        queens(row + 1, columns, result)
+
+
+def check_valid(columns, row, col):
+    for existing_row in range(row):
+        existing_col = columns[existing_row]
+        if col == existing_col or row - existing_row == abs(col - existing_col):
+            return False
+
+    return True
+
+
+res = []
+queens(0, [None] * GRID_SIZE, res)
+print(res)
+
+
+# 8.13
+@dataclass
+class Box:
+    width: int
+    height: int
+    depth: int
+
+    def __gt__(self, other):
+        return (self.width > other.width
+                and self.height > other.height
+                and self.depth > other.depth)
+
+
+def tallest(boxes):
+    boxes.sort(key=lambda box: box.height)
+
+    cache = [None] * len(boxes)
+    max_height = 0
+    for idx, _ in enumerate(boxes):
+        max_height = max(make_stack(boxes, idx, cache), max_height)
+
+    return max_height
+
+
+def make_stack(boxes, idx, cache):
+    if idx < len(boxes) - 1 and cache[idx]:
+        return cache[idx]
+
+    bottom = boxes[idx]
+    max_height = 0
+    for other_idx in range(idx + 1, len(boxes)):
+        if bottom > boxes[other_idx]:
+            max_height = max(make_stack(boxes, other_idx, cache), max_height)
+
+    max_height += bottom.height
+    cache[idx] = max_height
+    return max_height
+
+
+boxes = [Box(1, 3, 1), Box(4, 5, 8), Box(2, 1, 7), Box(2, 7, 4)]
+print(tallest(boxes))
+
+
+# 8.14
+def count_eval(exp, res, memo):
+    if len(exp) == 0:
+        return 0
+    elif len(exp) == 1:
+        return int(int(exp) == res)
+
+    if (exp, res) in memo:
+        return memo[(exp, res)]
+
+    ways = 0
+    for idx in range(1, len(exp), 2):
+        left, splitter, right = exp[:idx], exp[idx], exp[idx + 1:]
+
+        left_true = count_eval(left, True, memo)
+        left_false = count_eval(left, False, memo)
+        right_true = count_eval(right, True, memo)
+        right_false = count_eval(right, False, memo)
+        total = (left_true + left_false) * (right_true + right_false)
+
+        if splitter == "^":
+            total_true = (left_true * right_false) + (right_true * left_false)
+        elif splitter == "&":
+            total_true = left_true * right_true
+        else:
+            total_true = (left_true * right_false) + (right_true * left_false) + (left_true *
+                    right_true)
+
+        ways += total_true if res else total - total_true
+
+    memo[(exp, res)] = ways
+    return ways
+
+
+class TestEval(unittest.TestCase):
+
+    def test_example(self):
+        exp = "1^0|0|1"
+        self.assertEqual(count_eval(exp, False, {}), 2)
+
+    def test_other_example(self):
+        exp = "0&0&0&1^1|0"
+        self.assertEqual(count_eval(exp, True, {}), 10)
 
 
 
