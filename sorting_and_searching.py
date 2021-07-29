@@ -90,6 +90,103 @@ anagram_group(words)
 print(words)
 
 
+# 10.3
+def find_num(arr, num, lo, hi):
+    mid = (lo + hi) // 2
+    if arr[mid] == num:
+        return mid
+
+    if arr[mid] > arr[lo]:
+        return (find_num(arr, num, lo, mid - 1)
+                if arr[lo] <= num < arr[mid]
+                else find_num(arr, num, mid + 1, hi))
+    elif arr[mid] < arr[hi]:
+        return (find_num(arr, num, mid + 1, hi)
+                if arr[mid] < num <= arr[hi]
+                else find_num(arr, num, lo, mid - 1))
+    elif arr[lo] == arr[mid]:
+        if arr[mid] != arr[hi]:
+            return find_num(arr, num, mid + 1, hi)
+        else:
+            res = find_num(arr, num, lo, mid - 1)
+            return res if res != -1 else find_num(arr, num, mid + 1, hi)
+
+    return -1
+
+
+arr = [15, 16, 18, 1, 2, 3, 5, 7]
+print(find_num(arr, 5, 0, len(arr) - 1))
+
+arr = [1, 1, 1, 1, 1, 2, 3, 5, 7]
+print(find_num(arr, 5, 0, len(arr) - 1))
+
+
+class Listy:
+
+    def __init__(self, *args):
+        self.arr = args
+
+    def __getitem__(self, idx):
+        return -1 if idx >= len(self.arr) else self.arr[idx]
+
+
+# 10.4
+def find_listy_num(arr, num):
+    lo, hi = 0, 1
+    if arr[hi] == -1:
+        return -1 if arr[0] != num else 0
+
+    while -1 < arr[hi] < num:
+        hi *= 2
+
+    return binary_search(arr, num, hi // 2, hi)
+
+def binary_search(arr, num, lo, hi):
+    mid = (lo + hi) // 2
+
+    if arr[mid] == num:
+        return mid
+    # Keep looking to the left if current value is -1.
+    elif arr[mid] > num or arr[mid] == -1:
+        return binary_search(arr, num, lo, mid - 1)
+    elif arr[mid] < num:
+        return binary_search(arr, num, mid + 1, hi)
+
+    return -1
+
+
+arr = Listy(1, 3, 4, 5, 7, 10, 11, 12, 15, 16, 17, 21)
+print(arr[50])
+idx = find_listy_num(arr, 5)
+print(idx, arr[idx])
+idx = find_listy_num(arr, 17)
+print(idx, arr[idx])
+
+
+# 10.5
+def sparse_search(arr, val, lo, hi):
+    if lo > hi:
+        return -1
+
+    mid = (lo + hi) // 2
+    if arr[mid] == "":
+        left = sparse_search(arr, val, lo, mid - 1)
+        return left if left != -1 else sparse_search(arr, val, mid + 1, hi)
+
+    if arr[mid] == val:
+        return mid
+    elif arr[mid] < val:
+        return sparse_search(arr, val, mid + 1, hi)
+    else:
+        return sparse_search(arr, val, lo, mid - 1)
+
+
+arr = ['at', '', '', '', 'ball', '', '', 'car', '', '']
+print(sparse_search(arr, 'ball', 0, len(arr) - 1))
+print(sparse_search(arr, 'hi', 0, len(arr) - 1))
+print(sparse_search(arr, 'car', 0, len(arr) - 1))
+print(sparse_search(arr, 'at', 0, len(arr) - 1))
+
 
 if __name__ == "__main__":
     unittest.main()
