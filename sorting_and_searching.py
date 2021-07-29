@@ -1,3 +1,4 @@
+import sys
 import unittest
 from dataclasses import dataclass
 
@@ -186,6 +187,82 @@ print(sparse_search(arr, 'ball', 0, len(arr) - 1))
 print(sparse_search(arr, 'hi', 0, len(arr) - 1))
 print(sparse_search(arr, 'car', 0, len(arr) - 1))
 print(sparse_search(arr, 'at', 0, len(arr) - 1))
+
+
+# 10.6
+# This requires an external sort if available memory is < 20GB.
+# 1. xGB memory available.
+# 2. Sort 20/x chunks individually and save to temp files.
+# 3. Load (x / (20 / x) + 1)MB from each chunk (+1 for an output buffer).
+# 4. k-way merge from chunks into the output buffer to find min of chunks.
+# 5. Write buffer to final sorted file when full.
+# 6. Load next (x / (20 / x) + 1)MB from respective temp file when one of the sorted buffers
+# empties.
+# 7. Repeat until there is no more data in any of the chunks.
+
+# 10.8
+class BitVector:
+
+    def __init__(self):
+        self.bit_vector = 0
+
+    def get(self, pos):
+        return (self.bit_vector & (1 << pos)) != 0
+
+    def set(self, pos):
+        self.bit_vector |= (1 << pos)
+
+
+def check_duplicates(arr):
+    print(arr)
+    bit_vector = BitVector()
+    for elem in arr:
+        num = elem - 1 # Numbers start at 1
+        if bit_vector.get(num):
+            print(f"Duplicate {elem=}")
+            continue
+
+        bit_vector.set(num)
+
+arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18]
+check_duplicates(arr)
+
+arr = [1, 5, 1, 10, 12, 10]
+check_duplicates(arr)
+
+arr = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 10, 11, 12, 12, 13, 14, 15, 16, 17, 18, 31999, 2145, 31999,
+        890, 7224, 22154, 890]
+check_duplicates(arr)
+
+
+def find_elem(grid, num):
+    """O(m + n) time in worst case (e.g. finding inexistent value)."""
+    if not grid:
+        raise ValueError("Grid cannot be empty")
+
+    row, col = 0, len(grid[0]) - 1
+    while row < len(grid) and col >= 0:
+        if grid[row][col] == num:
+            return row, col
+        elif grid[row][col] < num:
+            row += 1
+        else:
+            col -= 1
+
+    return None, None
+
+
+grid = [[1, 7, 8, 9], [12, 13, 14, 27], [13, 14, 15, 18]]
+x, y = find_elem(grid, 15)
+print(x, y, grid[x][y])
+
+x, y = find_elem(grid, 7)
+print(x, y, grid[x][y])
+
+x, y = find_elem(grid, 2)
+print(x, y)
+
+
 
 
 if __name__ == "__main__":
