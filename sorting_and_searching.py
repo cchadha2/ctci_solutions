@@ -1,6 +1,9 @@
 import sys
 import unittest
 from dataclasses import dataclass
+from itertools import zip_longest
+from typing import Type
+
 
 # 10.1
 def merge_sorted(a, b):
@@ -262,6 +265,132 @@ print(x, y, grid[x][y])
 x, y = find_elem(grid, 2)
 print(x, y)
 
+
+@dataclass
+class Node:
+    value: object
+    left: Type["Node"] = None
+    right: Type["Node"] = None
+    left_size: int = 0
+
+    def insert(self, val):
+        print(f"Currently here {self.value}, with size: {self.left_size} attempting to insert {val}")
+        if val <= self.value:
+            if not self.left:
+                self.left = Node(val)
+            else:
+                self.left.insert(val)
+
+            self.left_size += 1
+        else:
+            if not self.right:
+                self.right = Node(val)
+                return
+            else:
+                self.right.insert(val)
+
+    def rank(self, val):
+        if val == self.value:
+            return self.left_size
+
+        if val <= self.value:
+            return -1 if not self.left else self.left.rank(val)
+
+        if not self.right:
+            return -1
+        right = self.right.rank(val)
+        return -1 if right == -1 else self.left_size + 1 + right
+
+
+class BinarySearchTree:
+
+    def __init__(self):
+        self.root = None
+
+    def insert(self, val):
+        if not self.root:
+            self.root = Node(val)
+            return
+
+        self.root.insert(val)
+
+    def rank(self, val):
+        if not self.root:
+            return -1
+
+        return self.root.rank(val)
+
+
+tree = BinarySearchTree()
+for elem in [5, 1, 4, 4, 5, 9, 7, 13, 3]:
+    tree.insert(elem)
+
+print(tree.rank(4))
+print(tree.rank(3))
+print(tree.rank(1))
+print(tree.rank(9))
+assert(tree.rank(4) == 3)
+assert(tree.rank(1) == 0)
+assert(tree.rank(3) == 1)
+assert(tree.rank(9) == 7)
+
+
+# 10.11
+def alternate_peaks(arr):
+    peaks, valleys, remaining = find_extremes(arr)
+
+    aux = arr.copy()
+    idx = 0
+    first, second = (peaks, valleys) if len(peaks) >= len(valleys) else (valleys, peaks)
+    for a, b in zip_longest(first, second):
+        arr[idx] = aux[a]
+        idx += 1
+
+        if b is not None:
+            arr[idx] = aux[b]
+            idx += 1
+
+    for remaining_idx in remaining:
+        arr[idx] = aux[remaining_idx]
+        idx += 1
+
+
+def find_extremes(arr):
+    if len(arr) <= 1:
+        raise ValueError("Need more data to find extremes")
+
+    peaks, valleys, remaining = [], [], []
+
+    def first_and_last(arr, idx, adj_idx):
+        value = arr[idx]
+        if value < arr[adj_idx]:
+            valleys.append(idx)
+        elif value > arr[adj_idx]:
+            peaks.append(idx)
+        else:
+            remaining.append(idx)
+    first_and_last(arr, 0, 1)
+    first_and_last(arr, len(arr) - 1, len(arr) - 2)
+
+    for idx, value in enumerate(arr[1:-1], start=1):
+        if arr[idx - 1] < value and arr[idx + 1] < value:
+            peaks.append(idx)
+        elif arr[idx - 1] > value and arr[idx + 1] > value:
+            valleys.append(idx)
+        else:
+            remaining.append(idx)
+
+    return peaks, valleys, remaining
+
+arr = [5, 8, 6, 2, 3, 4, 6]
+print(arr)
+alternate_peaks(arr)
+print(arr)
+
+arr = [5, 3, 1, 2, 3]
+print(arr)
+alternate_peaks(arr)
+print(arr)
 
 
 
